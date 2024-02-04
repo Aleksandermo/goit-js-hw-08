@@ -10,8 +10,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const storedFormData = localStorage.getItem('feedback-form-state');
     if (storedFormData) {
       const parsedData = JSON.parse(storedFormData);
-      emailInput.value = parsedData.email || '';
-      messageInput.value = parsedData.message || '';
+      emailInput.value = parsedData.email.trim() || '';
+      messageInput.value = parsedData.message.trim() || '';
     }
 
     // Ograniczenie zapisywania do local storage do raz na 500 milisekund
