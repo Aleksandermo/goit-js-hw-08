@@ -1,58 +1,26 @@
 import Vimeo from '@vimeo/player';
 import throttle from 'lodash.throttle';
 
-document.addEventListener('DOMContentLoaded', function () {
-    const iframe = document.querySelector('iframe#vimeo-player');
-    const player = new Vimeo(iframe);
+const player = new Vimeo(document.getElementById('vimeo-player'));
 
-const throttledUpdateLocalStorage = throttle(updateLocalStorage, 1000);
+// Funkcja do zapisywania czasu odtwarzania w local storage
+const saveCurrentTime = time => {
+  localStorage.setItem('videoplayer-current-time', time);
+};
 
-function updateLocalStorage(currentTime) {
-    localStorage.setItem("videoplayer-current-time", currentTime);
-}
+// Funkcja do ustawiania czasu odtwarzania na zapisany w local storage
+const setCurrentTimeFromStorage = () => {
+  const storedTime = localStorage.getItem('videoplayer-current-time');
+  if (storedTime !== null) {
+    player.setCurrentTime(parseFloat(storedTime));
+  }
+};
 
-function resumeVideoFromLocalStorage() {
-    const storedTime = localStorage.getItem("videoplayer-current-time");
+// Śledzenie zdarzenia timeupdate i zapisywanie czasu odtwarzania w local storage
+player.on('timeupdate', throttle(data => {
+  saveCurrentTime(data.seconds);
+}, 1000));
 
-    if (storedTime !== null) {
-        player.setCurrentTime(parseFloat(storedTime)).then(function (seconds) {
-        localStorage.setItem("videoplayer-current-time", seconds);
-        }).catch(function (error) {
-            switch (error.name) {
-                case 'RangeError':
-                // Zapisany czas odtwarzania był mniejszy niż 0 lub większy niż czas trwania filmu
-                break;
-                default:
-                // Inny błąd
-                break;
-                }
-            });
-        }
-}
-    
-    player.on('play', function() {
-        console.log('played the video!');
-    });
+// Ustawienie czasu odtwarzania na zapisany w local storage po przeładowaniu strony
+window.addEventListener('load', setCurrentTimeFromStorage);
 
-    const onPlay = function(data) {
-        const { duration, percent, seconds } = data;
-        console.log('Event data:', data);
-
-        throttledUpdateLocalStorage(seconds);
-    };
-    player.on('play', onPlay);
-
-    player.getCurrentTime().then(function(currentTime) {
-        localStorage.setItem("videoplayer-current-time", currentTime);
-    }).catch(function(error) {
-        switch (error.name) {
-            case 'RangeError':
-            // Czas odtwarzania był mniejszy niż 0 lub większy niż czas trwania filmu
-            break;
-            default:
-            // Inny błąd
-            break;
-        }
-    });
-    resumeVideoFromLocalStorage();
-});

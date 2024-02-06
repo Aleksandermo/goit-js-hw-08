@@ -10,8 +10,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const storedFormData = localStorage.getItem('feedback-form-state');
     if (storedFormData) {
       const parsedData = JSON.parse(storedFormData);
-      emailInput.value = parsedData.email.trim() || '';
-      messageInput.value = parsedData.message.trim() || '';
+      emailInput.value = parsedData.email || '';
+      messageInput.value = parsedData.message || '';
     }
 
     // Ograniczenie zapisywania do local storage do raz na 500 milisekund
@@ -28,21 +28,27 @@ document.addEventListener('DOMContentLoaded', function () {
     saveFormDataThrottled();
   });
 
-    // Obsługa zdarzenia submit
-        form.addEventListener('submit', function (event) {
-        event.preventDefault();
+    //    Obsługa zdarzenia submit
+          form.addEventListener('submit', handleSubmit);
+       
+          function handleSubmit(event) {
+            event.preventDefault();
+            const email = form.elements.email.value.trim();
+            const message = form.elements.message.value.trim();
+        
+            if (email === "" || message === "") {
+              alert("Please fill in all the fields!");
+              return;
+            }
+            const formObject = {}
+            formObject.email = email;
+            formObject.message = message;
+            console.log('Submitted form data:', formObject);
 
-      // Wysłanie obiektu z danymi do konsoli
-        const formObject = {
-        email: emailInput.value,
-        message: messageInput.value,
-      };
-      console.log('Submitted form data:', formObject);
-
-      // Czyszczenie pola formularza
-      emailInput.value = '';
-      messageInput.value = '';
+            // Czyszczenie pola formularza
+            form.reset();
+          }
     });
-  });
+  
 
 
